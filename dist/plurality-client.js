@@ -40156,16 +40156,28 @@ define("renderer",
     __exports__["default"] = Renderer;
   });
 define("index", 
-  ["./game","./entity","./behavior","./renderer","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
+  ["./game","./entity","./behavior","./renderer","./util","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __exports__) {
     
     var Game = __dependency1__["default"];
     var Entity = __dependency2__["default"];
     var Behavior = __dependency3__["default"];
     var Renderer = __dependency4__["default"];
+    var isServer = __dependency5__.isServer;
+    var isClient = __dependency5__.isClient;
+    var and = __dependency5__.and;
+    var or = __dependency5__.or;
+    var ref = __dependency5__.ref;
+    var property = __dependency5__.property;
 
     __exports__.Game = Game;
     __exports__.Entity = Entity;
     __exports__.Behavior = Behavior;
     __exports__.Renderer = Renderer;
+    __exports__.isServer = isServer;
+    __exports__.isClient = isClient;
+    __exports__.and = and;
+    __exports__.or = or;
+    __exports__.ref = ref;
+    __exports__.property = property;
   });
