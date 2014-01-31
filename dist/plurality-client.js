@@ -40156,8 +40156,8 @@ define("renderer",
     __exports__["default"] = Renderer;
   });
 define("index", 
-  ["./game","./entity","./behavior","./renderer","./util","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __exports__) {
+  ["./game","./entity","./behavior","./renderer","./util","./vendor/three","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __exports__) {
     
     var Game = __dependency1__["default"];
     var Entity = __dependency2__["default"];
@@ -40169,6 +40169,7 @@ define("index",
     var or = __dependency5__.or;
     var ref = __dependency5__.ref;
     var property = __dependency5__.property;
+    var THREE = __dependency6__["default"];
 
     __exports__.Game = Game;
     __exports__.Entity = Entity;
@@ -40180,4 +40181,5 @@ define("index",
     __exports__.or = or;
     __exports__.ref = ref;
     __exports__.property = property;
+    __exports__.THREE = THREE;
   });
