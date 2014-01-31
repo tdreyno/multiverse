@@ -1,0 +1,15 @@
+{
+  "name": "plurality",
+  "description": "A Multiplayer Game Engine for The Web",
+  "version": "0.0.1",
+  "dependencies": {
+    "express": "3.x",
+    "socket.io": ">= 0.9"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.2",
+    "grunt-es6-module-transpiler": "~0.6.0",
+    "grunt-contrib-requirejs": "~0.4.1",
+    "grunt-contrib-watch": "~0.5.3"
+  }
+}
