@@ -39893,6 +39893,8 @@ define("game",
     var GameServer = defineClass(function(){}, {
       initialize: function(world, params) {
         this.world = world;
+        this.params = params;
+
         proxyMethodsTo.call(this, worldMethods, this.world);
 
         this.network = new NetworkServer(this.world);
