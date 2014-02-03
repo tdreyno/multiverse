@@ -1,8 +1,8 @@
 module.exports = function(grunt) {
   grunt.initConfig({
     watch: {
-      files: ['js/**/*.js'],
-      tasks: ['default']
+      files: ['lib/**/*.js'],
+      tasks: ['dev']
     },
 
     pkg: grunt.file.readJSON('package.json'),
@@ -45,12 +45,39 @@ module.exports = function(grunt) {
           out: "dist/plurality-client.min.js"
         }
       }
+    },
+
+    'closure-compiler': {
+      prod: {
+        js: 'dist/plurality-client.js',
+        jsOutputFile: "dist/plurality-client.min.js",
+        maxBuffer: 500,
+        options: {
+          compilation_level: 'ADVANCED_OPTIMIZATIONS',
+          language_in: 'ECMASCRIPT5_STRICT'
+        }
+      }
+    },
+
+    compress: {
+      prod: {
+        options: {
+          mode: 'gzip'
+        },
+        files: [
+          { expand: true, src: ['dist/*.min.js'], ext: '.gz.js'}
+        ]
+      }
     }
   });
 
   grunt.loadNpmTasks('grunt-contrib-requirejs');
   grunt.loadNpmTasks('grunt-es6-module-transpiler');
   grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-contrib-compress');
+  grunt.loadNpmTasks('grunt-closure-compiler');
 
-  grunt.registerTask('default', ['transpile:client', 'transpile:server', 'requirejs:dev', 'requirejs:prod']);
+  grunt.registerTask('dev', ['transpile:client', 'transpile:server', 'requirejs:dev']);
+  grunt.registerTask('closure', ['transpile:client', 'transpile:server', 'requirejs:dev', 'closure-compiler:prod']);
+  grunt.registerTask('prod', ['transpile:client', 'transpile:server', 'requirejs:prod', 'compress:prod']);
 };

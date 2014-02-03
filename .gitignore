@@ -1,5 +1,7 @@
 /dist/client
 /dist/server
+/dist/*.gz.js
+/dist/*.report.txt
 /public/js/client.js
 /public/js/vendor/bower_components/
 *.sublime-workspace
