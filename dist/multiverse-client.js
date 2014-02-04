@@ -40184,4 +40184,5 @@ define("index",
     __exports__.ref = ref;
     __exports__.property = property;
     __exports__.THREE = THREE;
+    __exports__.CLI = CLI;
   });

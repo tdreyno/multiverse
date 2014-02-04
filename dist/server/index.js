@@ -1,0 +1,25 @@
+"use strict";
+var Game = require("./game")["default"];
+var Entity = require("./entity")["default"];
+var Behavior = require("./behavior")["default"];
+var Renderer = require("./renderer")["default"];
+var isServer = require("./util").isServer;
+var isClient = require("./util").isClient;
+var and = require("./util").and;
+var or = require("./util").or;
+var ref = require("./util").ref;
+var property = require("./util").property;
+var THREE = require("./vendor/three")["default"];
+
+exports.Game = Game;
+exports.Entity = Entity;
+exports.Behavior = Behavior;
+exports.Renderer = Renderer;
+exports.isServer = isServer;
+exports.isClient = isClient;
+exports.and = and;
+exports.or = or;
+exports.ref = ref;
+exports.property = property;
+exports.THREE = THREE;
+exports.CLI = CLI;
