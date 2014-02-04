@@ -34,7 +34,7 @@ module.exports = function(grunt) {
           baseUrl: "dist/client",
           name: "index",
           optimize: 'none',
-          out: "dist/plurality-client.js"
+          out: "dist/multiverse-client.js"
         }
       },
 
@@ -42,15 +42,15 @@ module.exports = function(grunt) {
         options: {
           baseUrl: "dist/client",
           name: "index",
-          out: "dist/plurality-client.min.js"
+          out: "dist/multiverse-client.min.js"
         }
       }
     },
 
     'closure-compiler': {
       prod: {
-        js: 'dist/plurality-client.js',
-        jsOutputFile: "dist/plurality-client.min.js",
+        js: 'dist/multiverse-client.js',
+        jsOutputFile: "dist/multiverse-client.min.js",
         maxBuffer: 500,
         options: {
           compilation_level: 'ADVANCED_OPTIMIZATIONS',

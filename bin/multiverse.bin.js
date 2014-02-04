@@ -2,7 +2,7 @@
 
 'use strict';
 
-process.title = 'plurality';
+process.title = 'multiverse';
 
 var basedir = process.cwd();
 
@@ -44,7 +44,7 @@ grunt.initConfig({
         optimize: 'none',
         out: basedir + "/dist/game.js",
         paths: {
-          plurality: __dirname + '/../dist/plurality-client'
+          multiverse: __dirname + '/../dist/multiverse-client'
         }
       }
     }//,
@@ -53,7 +53,7 @@ grunt.initConfig({
     //   options: {
     //     baseUrl: "dist/client",
     //     name: "index",
-    //     out: "dist/plurality-client.min.js"
+    //     out: "dist/multiverse-client.min.js"
     //   }
     // }
   },
