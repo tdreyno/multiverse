@@ -56,16 +56,22 @@ grunt.initConfig({
     //     out: "dist/plurality-client.min.js"
     //   }
     // }
-  }
+  },
 
+  nodemon: {
+    dev: {
+      script: __dirname + '/dist/server/core.js'
+    }
+  }
 });
 
 grunt.loadNpmTasks('grunt-contrib-requirejs');
 grunt.loadNpmTasks('grunt-es6-module-transpiler');
 grunt.loadNpmTasks('grunt-contrib-watch');
+grunt.loadNpmTasks('grunt-nodemon');
 
 grunt.registerTask('dev', ['transpile:client', 'transpile:server', 'requirejs:dev']);
-grunt.registerTask('server', ['dev', 'watch']);
+grunt.registerTask('server', ['dev', 'watch', 'nodemon:dev']);
 // grunt.registerTask('closure', ['transpile:client', 'transpile:server', 'requirejs:dev', 'closure-compiler:prod']);
 // grunt.registerTask('prod', ['transpile:client', 'transpile:server', 'requirejs:prod', 'compress:prod']);
 
