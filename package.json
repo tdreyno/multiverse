@@ -1,5 +1,5 @@
 {
-  "name": "plurality",
+  "name": "multiverse",
   "description": "A Multiplayer Game Engine for The Web",
   "version": "0.0.1",
   "dependencies": {
@@ -11,6 +11,6 @@
     "grunt-nodemon": "~0.2.0"
   },
   "bin": {
-    "plurality": "bin/plurality.bin.js"
+    "multiverse": "bin/multiverse.bin.js"
   }
 }
