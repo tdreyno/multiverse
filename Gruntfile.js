@@ -32,7 +32,7 @@ module.exports = function(grunt) {
       dev: {
         options: {
           baseUrl: "dist/client",
-          name: "index",
+          name: "multiverse",
           optimize: 'none',
           out: "dist/multiverse-client.js"
         }
@@ -41,17 +41,25 @@ module.exports = function(grunt) {
       prod: {
         options: {
           baseUrl: "dist/client",
-          name: "index",
+          name: "multiverse",
           out: "dist/multiverse-client.min.js"
         }
       }
+    },
+    
+    concat: {
+      dev: {
+        src: ['node_modules/requirejs/require.js', 'dist/multiverse-client.js', 'lib/server/suffix.js'],
+        dest: 'dist/multiverse-client-with-require.js',
+      },
     }
   });
 
   grunt.loadNpmTasks('grunt-contrib-requirejs');
   grunt.loadNpmTasks('grunt-es6-module-transpiler');
   grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-contrib-concat');
 
-  grunt.registerTask('dev', ['transpile:client', 'transpile:server', 'requirejs:dev']);
+  grunt.registerTask('dev', ['transpile:client', 'transpile:server', 'requirejs:dev', 'concat:dev']);
   grunt.registerTask('prod', ['transpile:client', 'transpile:server', 'requirejs:prod', 'compress:prod']);
 };

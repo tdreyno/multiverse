@@ -22,4 +22,3 @@ exports.or = or;
 exports.ref = ref;
 exports.property = property;
 exports.THREE = THREE;
-exports.CLI = CLI;
