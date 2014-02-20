@@ -1,13 +1,14 @@
 "use strict";
 var proxyMethodsTo = require("./util").proxyMethodsTo;
+var isServer = require("./util").isServer;
 
 var Actor = function(entity, params) {
   this.entity = entity;
 
   params = params || {}
 
-  this.role = params.role || (global.isNode ? Actor.Role.AUTHORITY : Actor.Role.SIMULATED);
-  this.remoteRole = params.remoteRole || (global.isNode ? Actor.Role.SIMULATED : Actor.Role.AUTHORITY);
+  this.role = params.role || (isServer() ? Actor.Role.AUTHORITY : Actor.Role.SIMULATED);
+  this.remoteRole = params.remoteRole || (isServer() ? Actor.Role.SIMULATED : Actor.Role.AUTHORITY);
   this.typeName = params.typeName || ('unknownType_' + this.constructor.classTypeId);
 
   this.isDirty = false;

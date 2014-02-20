@@ -7,7 +7,7 @@ var Behavior = function(entity, options) {
   this.options_ = options;
   this.enabled_ = true;
 
-  proxyMethodsTo.call(this, ['on', 'off', 'trigger', 'getWorld', 'get', 'set', 'getRawState', 'createEntity'], this.entity);
+  proxyMethodsTo.call(this, ['on', 'off', 'trigger', 'getWorld', 'get', 'set', 'getRawState', 'createEntity', 'triggerNetwork'], this.entity);
 };
 
 Behavior.prototype.isActive = function() {

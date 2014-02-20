@@ -1,18 +1,19 @@
 {
   "name": "multiverse",
   "description": "A Multiplayer Game Engine for The Web",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "dependencies": {
     "socket.io": "~0.9.16",
     "grunt": "~0.4.2",
     "grunt-es6-module-transpiler": "~0.6.0",
     "grunt-contrib-requirejs": "~0.4.1",
     "grunt-contrib-watch": "~0.5.3",
-    "grunt-nodemon": "~0.2.0",
-    "grunt-concurrent": "~0.4.3",
     "express": "~3.4.8",
     "requirejs": "~2.1.10",
-    "grunt-contrib-concat": "~0.3.0"
+    "grunt-contrib-concat": "~0.3.0",
+    "socket.io-client": "^0.9.16",
+    "grunt-express-server": "^0.4.13",
+    "grunt-concurrent": "^0.4.3"
   },
   "bin": {
     "multiverse": "bin/multiverse.bin.js"

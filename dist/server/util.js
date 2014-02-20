@@ -14,9 +14,9 @@ function proxyMethodsTo(methods, target) {
 }
 
 // Compose API
-function isClient() { return !global.isNode; };
+function isClient() { return !isServer(); };
 
-function isServer() { return global.isNode; };
+function isServer() { return 'undefined' !== typeof global; };
 
 function capitalize(name) {
   return name.charAt(0).toUpperCase() + name.slice(1);

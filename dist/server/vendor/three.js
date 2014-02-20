@@ -6,8 +6,10 @@
  */
 
 var THREE = { REVISION: '65' };
+var self = 'undefined' !== typeof global ? global : window;
 
-self.console = self.console || {
+if ('undefined' === typeof self.console) {
+self.console = {
 
 	info: function () {},
 	log: function () {},
@@ -15,6 +17,7 @@ self.console = self.console || {
 	warn: function () {},
 	error: function () {}
 
+};
 };
 
 String.prototype.trim = String.prototype.trim || function () {

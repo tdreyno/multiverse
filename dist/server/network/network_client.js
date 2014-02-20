@@ -8,6 +8,12 @@ var NetworkClient = function(world, socket, typeLookup) {
   this.socket.on('actor:operations', function(data) {
     self.onOperations(data);
   });
+
+  this.world.on('worldEvent', function(e) {
+    if (e.isNetworkEvent) {
+      socket.emit('clientEvent', e);
+    }
+  });
 };
 
 NetworkClient.prototype.onOperations = function(data) {

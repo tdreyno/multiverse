@@ -6,8 +6,21 @@ function start() {
 
   grunt.initConfig({
     watch: {
-      files: [basedir + '/game/**/*.js'],
-      tasks: ['dev']
+      dev: {
+        files: [basedir + '/game/**/*.js'],
+        tasks: ['dev'],
+        options: {
+          spawn: false
+        }
+      },
+
+      express: {
+        files:  [basedir + '/dist/server/**/*.js' ],
+        tasks:  ['express:dev:stop'],
+        options: {
+          spawn: false
+        }
+      }
     },
 
     transpile: {
@@ -32,54 +45,33 @@ function start() {
       }
     },
 
-    requirejs: {
-      // dev: {
-      //   options: {
-      //     baseUrl: basedir + "/dist/client",
-      //     name: "core",
-      //     optimize: 'none',
-      //     out: basedir + "/dist/game.js",
-      //     paths: {
-      //       multiverse: __dirname + '/../multiverse-client'
-      //     }
-      //   }
-      // },
-
-      // prod: {
-      //   options: {
-      //     baseUrl: "dist/client",
-      //     name: "index",
-      //     out: "dist/multiverse-client.min.js"
-      //   }
-      // }
-    },
-
-    nodemon: {
+    express: {
+      options: {
+        background: true,
+        delay: 200,
+      },
       dev: {
-        script: __dirname + '/server/core.js'
+        options: {
+          script: __dirname + '/server/core.js'
+        }
       }
     },
 
     concurrent: {
       dev: {
-        tasks: ['nodemon:dev', 'watch'],
-        options: {
-          logConcurrentOutput: true
-        }
+        tasks: ['watch:express'] //'watch:dev', 
       }
     }
   });
 
-  grunt.loadTasks(__dirname + '/../../node_modules/grunt-contrib-requirejs/tasks');
   grunt.loadTasks(__dirname + '/../../node_modules/grunt-es6-module-transpiler/tasks');
   grunt.loadTasks(__dirname + '/../../node_modules/grunt-contrib-watch/tasks');
-  grunt.loadTasks(__dirname + '/../../node_modules/grunt-nodemon/tasks');
+  grunt.loadTasks(__dirname + '/../../node_modules/grunt-express-server/tasks');
   grunt.loadTasks(__dirname + '/../../node_modules/grunt-contrib-concat/tasks');
+  grunt.loadTasks(__dirname + '/../../node_modules/grunt-concurrent/tasks');
 
   grunt.registerTask('dev', ['transpile:client', 'transpile:server']);
-  grunt.registerTask('server', ['dev', 'nodemon:dev']);
-  // grunt.registerTask('closure', ['transpile:client', 'transpile:server', 'requirejs:dev', 'closure-compiler:prod']);
-  // grunt.registerTask('prod', ['transpile:client', 'transpile:server', 'requirejs:prod', 'compress:prod']);
+  grunt.registerTask('server', ['dev', 'watch:dev']);
 
   var mode = process.argv[2];
 
