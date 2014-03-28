@@ -1,5 +1,6 @@
-import { proxyMethodsTo } from './util';
-import { _ } from './vendor/underscore';
+"use strict";
+var proxyMethodsTo = require("./util").proxyMethodsTo;
+var _ = require("../vendor/underscore")._;
 
 var StateManager = function(entity) {
   this.entity = entity;
@@ -31,4 +32,4 @@ StateManager.prototype.sync = function(data) {
   }
 };
 
-export default = StateManager;
+exports["default"] = StateManager;

@@ -17,7 +17,7 @@ app.get('/multiverse/game.js', function(req, res) {
   res.sendfile(path.resolve(__dirname + '/../../multiverse-client-with-require.js'));
 });
 
-var game = require(path.resolve(process.cwd() + '/dist/server/game/core'))['default'];
+var game = require(path.resolve(process.cwd() + '/dist/server/game/server'))['default'];
 
 httpServer.listen(process.env.PORT || 7777);
 
@@ -29,3 +29,5 @@ socketio.set('log level', 2);
 socketio.sockets.on('connection', function(socket) {
   game.trigger('socket:connection', [socket]);
 });
+
+exports = module.exports = httpServer;

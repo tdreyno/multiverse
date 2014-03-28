@@ -1,5 +1,5 @@
 "use strict";
-var _ = require("./vendor/underscore")._;
+var _ = require("../vendor/underscore")._;
 
 function proxyMethodsTo(methods, target) {
   for (var i = 0; i < methods.length; i++) {

@@ -1,8 +1,10 @@
-import BehaviorManager from './behavior_manager';
-import EventManager from './event_manager';
-import StateManager from './state_manager';
-import Actor from './actor';
-import { defineWrapper, proxyMethodsTo } from './util';
+"use strict";
+var BehaviorManager = require("./behavior_manager")["default"];
+var EventManager = require("./event_manager")["default"];
+var StateManager = require("./state_manager")["default"];
+var Actor = require("./actor")["default"];
+var defineWrapper = require("./util").defineWrapper;
+var proxyMethodsTo = require("./util").proxyMethodsTo;
 
 var Entity = function(params) {
   this.behaviorManager = new BehaviorManager(this);
@@ -76,8 +78,8 @@ Entity.define = function(details) {
   var events = details.events || {};
   delete details.events;
 
-  var actorParams = details.actor || {};
-  delete details.actor;
+  var syncsAs = details.syncsAs || {};
+  delete details.syncsAs;
 
   var wrappedConstructor = function(params) {
     params = params || {};
@@ -87,7 +89,11 @@ Entity.define = function(details) {
     params.id = params.id || this.uid;
     this.sync(params);
 
-    this.actor = new Actor(this, actorParams);
+    if (syncsAs) {
+      this.actor = new Actor(this, {
+        typeName: syncsAs
+      });
+    }
 
     var self = this;
     for (var key in events) {
@@ -105,11 +111,18 @@ Entity.define = function(details) {
 
   var wrapped = defineWrapper(Entity, wrappedConstructor, details);
 
-  if (actorParams && actorParams.typeName) {
-    Actor.byName[actorParams.typeName] = wrapped;
+  if (syncsAs) {
+    Actor.byName[syncsAs] = wrapped;
   }
+
+  wrapped.behaviors = {
+    add: function(klass, options) {
+      options = 'undefined' !== typeof options ? options : {};
+      behaviors.push([klass, options.params || {}, options.guard]);
+    }
+  };
   
   return wrapped;
 };
 
-export default = Entity;
+exports["default"] = Entity;

@@ -3349,8 +3349,8 @@ define("vendor/underscore",
 
     __exports__._ = _;
   });
-define("util", 
-  ["./vendor/underscore","exports"],
+define("shared/util", 
+  ["../vendor/underscore","exports"],
   function(__dependency1__, __exports__) {
     
     var _ = __dependency1__._;
@@ -3466,158 +3466,6 @@ define("util",
     __exports__.or = or;
     __exports__.property = property;
     __exports__.ref = ref;
-  });
-define("actor", 
-  ["./util","exports"],
-  function(__dependency1__, __exports__) {
-    
-    var proxyMethodsTo = __dependency1__.proxyMethodsTo;
-    var isServer = __dependency1__.isServer;
-
-    var Actor = function(entity, params) {
-      this.entity = entity;
-
-      params = params || {}
-
-      this.role = params.role || (isServer() ? Actor.Role.AUTHORITY : Actor.Role.SIMULATED);
-      this.remoteRole = params.remoteRole || (isServer() ? Actor.Role.SIMULATED : Actor.Role.AUTHORITY);
-      this.typeName = params.typeName || ('unknownType_' + this.constructor.classTypeId);
-
-      this.isDirty = false;
-
-      proxyMethodsTo.call(this, ['get', 'set', 'sync', 'getRawState'], this.entity);
-    };
-
-    Actor.prototype.becameDirty = function() {
-      this.isDirty = true;
-    };
-
-    Actor.prototype.becameClean = function() {
-      this.isDirty = false;
-    };
-
-    Actor.prototype.shouldSync = function() {
-      return ((this.role === Actor.Role.AUTHORITY) &&
-              (this.remoteRole !== Actor.Role.NONE));
-    };
-
-    Actor.prototype.trigger = function(eventName, data) {
-      if (eventName === 'stateChange') {
-        if (this.shouldSync()) {
-          this.becameDirty();
-        }
-      }
-    };
-
-    // Actor.prototype.tearOff = function() {
-    // };
-
-    Actor.Role = {
-      NONE: 1,
-      AUTHORITY: 2,
-      AUTONOMOUS: 3,
-      SIMULATED: 4
-    };
-
-    Actor.byName = {};
-
-    __exports__["default"] = Actor;
-  });
-define("behavior_manager", 
-  ["exports"],
-  function(__exports__) {
-    
-    var BehaviorManager = function(entity) {
-      this.entity = entity;
-      this.behaviorDefinitions = [];
-      this.behaviors = {};
-      this.behaviorGuards = {};
-    };
-
-    BehaviorManager.prototype.getActiveBehaviors = function() {
-      this.checkGuards();
-
-      var activeList = [];
-
-      for (var key in this.behaviors) {
-        if (this.behaviors.hasOwnProperty(key)) {
-          var behavior = this.behaviors[key];
-
-          if (behavior.isActive()) {
-            activeList.push(behavior);
-          }
-        }
-      }
-
-      return activeList;
-    };
-
-    BehaviorManager.prototype.checkGuards = function() {
-      for (var key in this.behaviors) {
-        if (this.behaviors.hasOwnProperty(key)) {
-          var behavior = this.behaviors[key];
-          var behaviorGuard = this.behaviorGuards[key];
-          var guardResult = 'function' === typeof behaviorGuard ? behaviorGuard.call(behavior) : behaviorGuard;
-
-          if (behavior.isActive() && !guardResult) {
-            behavior.disable();
-          } else if (!behavior.isActive() && guardResult) {
-            behavior.enable();
-          }
-        }
-      }
-    };
-
-    BehaviorManager.prototype.onActiveBehaviors = function(method, args) {
-      var active = this.getActiveBehaviors();
-
-      for (var i = 0; i < active.length; i++) {
-        active[i][method].apply(active[i], args);
-      }
-    };
-
-    BehaviorManager.prototype.addBehavior = function(behavior, options, guard) {
-      this.behaviorDefinitions.push(Array.prototype.slice.call(this, arguments));
-    };
-
-    BehaviorManager.prototype.addBehaviors = function(behaviors) {
-      this.behaviorDefinitions = this.behaviorDefinitions.concat(behaviors);
-    };
-
-    BehaviorManager.prototype.setupBehavior = function(behavior, guard) {
-      this.behaviors[behavior.uid] = behavior;
-      this.behaviorGuards[behavior.uid] = 'undefined' !== typeof guard ? guard : true;
-    };
-
-    BehaviorManager.prototype.setup = function() {
-      for (var i = 0; i < this.behaviorDefinitions.length; i++) {
-        var def = this.behaviorDefinitions[i];
-        this.setupBehavior(
-          new def[0](this.entity, def[1]),
-          def[2]
-        );
-      }
-
-      this.checkGuards();
-    };
-
-    BehaviorManager.prototype.destroy = function() {
-      for (var key in this.behaviors) {
-        if (this.behaviors.hasOwnProperty(key)) {
-          this.behaviors[key].destroy();
-        }
-      }
-
-      this.behaviors = {};
-      this.behaviorGuards = {};
-    };
-
-    BehaviorManager.prototype.trigger = function(eventName, eventData) {
-      var args = [eventName].concat(eventData || []);
-      this.onActiveBehaviors('receivedMessage', args);
-    };
-
-    __exports__["default"] = BehaviorManager;
   });
 define("vendor/EventEmitter", 
   ["exports"],
@@ -4083,8 +3931,8 @@ define("vendor/EventEmitter",
 
     __exports__["default"] = EventEmitter;
   });
-define("event_manager", 
-  ["./vendor/EventEmitter","exports"],
+define("shared/event_manager", 
+  ["../vendor/EventEmitter","exports"],
   function(__dependency1__, __exports__) {
     
     var EventEmitter = __dependency1__["default"];
@@ -4107,8 +3955,160 @@ define("event_manager",
 
     __exports__["default"] = EventManager;
   });
-define("state_manager", 
-  ["./util","./vendor/underscore","exports"],
+define("shared/actor", 
+  ["./util","exports"],
+  function(__dependency1__, __exports__) {
+    
+    var proxyMethodsTo = __dependency1__.proxyMethodsTo;
+    var isServer = __dependency1__.isServer;
+
+    var Actor = function(entity, params) {
+      this.entity = entity;
+
+      params = params || {}
+
+      this.role = params.role || (isServer() ? Actor.Role.AUTHORITY : Actor.Role.SIMULATED);
+      this.remoteRole = params.remoteRole || (isServer() ? Actor.Role.SIMULATED : Actor.Role.AUTHORITY);
+      this.typeName = params.typeName || ('unknownType_' + this.constructor.classTypeId);
+
+      this.isDirty = false;
+
+      proxyMethodsTo.call(this, ['get', 'set', 'sync', 'getRawState'], this.entity);
+    };
+
+    Actor.prototype.becameDirty = function() {
+      this.isDirty = true;
+    };
+
+    Actor.prototype.becameClean = function() {
+      this.isDirty = false;
+    };
+
+    Actor.prototype.shouldSync = function() {
+      return ((this.role === Actor.Role.AUTHORITY) &&
+              (this.remoteRole !== Actor.Role.NONE));
+    };
+
+    Actor.prototype.trigger = function(eventName, data) {
+      if (eventName === 'stateChange') {
+        if (this.shouldSync()) {
+          this.becameDirty();
+        }
+      }
+    };
+
+    // Actor.prototype.tearOff = function() {
+    // };
+
+    Actor.Role = {
+      NONE: 1,
+      AUTHORITY: 2,
+      AUTONOMOUS: 3,
+      SIMULATED: 4
+    };
+
+    Actor.byName = {};
+
+    __exports__["default"] = Actor;
+  });
+define("shared/behavior_manager", 
+  ["exports"],
+  function(__exports__) {
+    
+    var BehaviorManager = function(entity) {
+      this.entity = entity;
+      this.behaviorDefinitions = [];
+      this.behaviors = {};
+      this.behaviorGuards = {};
+    };
+
+    BehaviorManager.prototype.getActiveBehaviors = function() {
+      this.checkGuards();
+
+      var activeList = [];
+
+      for (var key in this.behaviors) {
+        if (this.behaviors.hasOwnProperty(key)) {
+          var behavior = this.behaviors[key];
+
+          if (behavior.isActive()) {
+            activeList.push(behavior);
+          }
+        }
+      }
+
+      return activeList;
+    };
+
+    BehaviorManager.prototype.checkGuards = function() {
+      for (var key in this.behaviors) {
+        if (this.behaviors.hasOwnProperty(key)) {
+          var behavior = this.behaviors[key];
+          var behaviorGuard = this.behaviorGuards[key];
+          var guardResult = 'function' === typeof behaviorGuard ? behaviorGuard.call(behavior) : behaviorGuard;
+
+          if (behavior.isActive() && !guardResult) {
+            behavior.disable();
+          } else if (!behavior.isActive() && guardResult) {
+            behavior.enable();
+          }
+        }
+      }
+    };
+
+    BehaviorManager.prototype.onActiveBehaviors = function(method, args) {
+      var active = this.getActiveBehaviors();
+
+      for (var i = 0; i < active.length; i++) {
+        active[i][method].apply(active[i], args);
+      }
+    };
+
+    BehaviorManager.prototype.addBehavior = function(behavior, options, guard) {
+      this.behaviorDefinitions.push(Array.prototype.slice.call(this, arguments));
+    };
+
+    BehaviorManager.prototype.addBehaviors = function(behaviors) {
+      this.behaviorDefinitions = this.behaviorDefinitions.concat(behaviors);
+    };
+
+    BehaviorManager.prototype.setupBehavior = function(behavior, guard) {
+      this.behaviors[behavior.uid] = behavior;
+      this.behaviorGuards[behavior.uid] = 'undefined' !== typeof guard ? guard : true;
+    };
+
+    BehaviorManager.prototype.setup = function() {
+      for (var i = 0; i < this.behaviorDefinitions.length; i++) {
+        var def = this.behaviorDefinitions[i];
+        this.setupBehavior(
+          new def[0](this.entity, def[1]),
+          def[2]
+        );
+      }
+
+      this.checkGuards();
+    };
+
+    BehaviorManager.prototype.destroy = function() {
+      for (var key in this.behaviors) {
+        if (this.behaviors.hasOwnProperty(key)) {
+          this.behaviors[key].destroy();
+        }
+      }
+
+      this.behaviors = {};
+      this.behaviorGuards = {};
+    };
+
+    BehaviorManager.prototype.trigger = function(eventName, eventData) {
+      var args = [eventName].concat(eventData || []);
+      this.onActiveBehaviors('receivedMessage', args);
+    };
+
+    __exports__["default"] = BehaviorManager;
+  });
+define("shared/state_manager", 
+  ["./util","../vendor/underscore","exports"],
   function(__dependency1__, __dependency2__, __exports__) {
     
     var proxyMethodsTo = __dependency1__.proxyMethodsTo;
@@ -4146,7 +4146,7 @@ define("state_manager",
 
     __exports__["default"] = StateManager;
   });
-define("entity", 
+define("shared/entity", 
   ["./behavior_manager","./event_manager","./state_manager","./actor","./util","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __exports__) {
     
@@ -4229,8 +4229,8 @@ define("entity",
       var events = details.events || {};
       delete details.events;
 
-      var actorParams = details.actor || {};
-      delete details.actor;
+      var syncsAs = details.syncsAs || {};
+      delete details.syncsAs;
 
       var wrappedConstructor = function(params) {
         params = params || {};
@@ -4240,7 +4240,11 @@ define("entity",
         params.id = params.id || this.uid;
         this.sync(params);
 
-        this.actor = new Actor(this, actorParams);
+        if (syncsAs) {
+          this.actor = new Actor(this, {
+            typeName: syncsAs
+          });
+        }
 
         var self = this;
         for (var key in events) {
@@ -4258,16 +4262,23 @@ define("entity",
 
       var wrapped = defineWrapper(Entity, wrappedConstructor, details);
 
-      if (actorParams && actorParams.typeName) {
-        Actor.byName[actorParams.typeName] = wrapped;
+      if (syncsAs) {
+        Actor.byName[syncsAs] = wrapped;
       }
+
+      wrapped.behaviors = {
+        add: function(klass, options) {
+          options = 'undefined' !== typeof options ? options : {};
+          behaviors.push([klass, options.params || {}, options.guard]);
+        }
+      };
       
       return wrapped;
     };
 
     __exports__["default"] = Entity;
   });
-define("world", 
+define("shared/world", 
   ["./entity","./event_manager","./state_manager","./util","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
     
@@ -4357,8 +4368,8 @@ define("world",
 
     __exports__["default"] = World;
   });
-define("world_renderer", 
-  ["./util","exports"],
+define("client/world_renderer", 
+  ["../shared/util","exports"],
   function(__dependency1__, __exports__) {
     
     var defineClass = __dependency1__.defineClass;
@@ -4460,7 +4471,7 @@ define("world_renderer",
 
     __exports__["default"] = WorldRenderer;
   });
-define("network/network_client", 
+define("client/network_client", 
   ["exports"],
   function(__exports__) {
     
@@ -4529,103 +4540,7 @@ define("network/network_client",
 
     __exports__["default"] = NetworkClient;
   });
-define("network/network_server", 
-  ["exports"],
-  function(__exports__) {
-    
-    var NetworkServer = function(world) {
-      this.world = world;
-      this.connections = {};
-      this.pendingOperations = [];
-
-      var self = this;
-      this.world.on('addToWorld', function(e) {
-        self.addOperation('create', e.actor.typeName, e.getRawState());
-      });
-
-      this.world.on('removeFromWorld', function(e) {
-        self.addOperation('remove', e.actor.typeName, { id: e.get('id') });
-      });
-
-      this.world.on('worldEvent', function(e) {
-        if (e.isNetworkEvent) {
-          self.addOperation('event', e.eventName, e.data);
-        }
-      });
-    };
-
-    NetworkServer.prototype.addConnection = function(socket) {
-      this.connections[socket.id] = socket;
-      // Do stuff?
-    };
-
-    NetworkServer.prototype.removeConnection = function(socket) {
-      delete this.connections[socket.id];
-      // Do stuff?
-    };
-
-    NetworkServer.prototype.pushCurrentState = function(id) {
-      var creationOps = [];
-
-      for (var key in this.world.entities) {
-        if (this.world.entities.hasOwnProperty(key)) {
-          var e = this.world.entities[key];
-          if (e.actor.shouldSync()) {
-            creationOps.push(this.makeOperation('create', e.actor.typeName, e.getRawState()));
-          }
-        }
-      }
-
-      if (creationOps.length > 0) {
-        this.connections[id].emit('actor:operations', creationOps);
-      }
-    };
-
-    NetworkServer.prototype.sync = function() {
-      for (var key in this.world.entities) {
-        if (this.world.entities.hasOwnProperty(key)) {
-          var e = this.world.entities[key];
-          if (e.actor.isDirty) {
-            this.addOperation('update', e.actor.typeName, e.getRawState());
-          }
-        }
-      }
-
-      if (this.pendingOperations.length > 0) {
-        this.broadcast('actor:operations', this.pendingOperations);
-        this.pendingOperations.length = 0;
-
-        for (var key in this.world.entities) {
-          if (this.world.entities.hasOwnProperty(key)) {
-            var e = this.world.entities[key];
-            if (e.actor.isDirty) {
-              e.actor.becameClean();
-            }
-          }
-        }
-      }
-    };
-
-    NetworkServer.prototype.broadcast = function(eventName, params) {
-      // console.log('broadcast', eventName, params);
-      for (var id in this.connections) {
-        if (this.connections.hasOwnProperty(id)) {
-          this.connections[id].emit(eventName, params);
-        }
-      }
-    };
-
-    NetworkServer.prototype.makeOperation = function(op, type, params) {
-      return { op: op, type: type, params: params };
-    };
-
-    NetworkServer.prototype.addOperation = function(op, type, params) {
-      this.pendingOperations.push(this.makeOperation.apply(this, arguments));
-    };
-
-    __exports__["default"] = NetworkServer;
-  });
-define("key_handler", 
+define("client/key_handler", 
   ["exports"],
   function(__exports__) {
     
@@ -45842,127 +45757,35 @@ var swfobject=function(){var D="undefined",r="object",S="Shockwave Flash",W="Sho
 );
 
 if (typeof define === "function" && define.amd) {
-  define('../../node_modules/socket.io-client/dist/socket.io',[], function () { return io; });
+  define('client/../../../node_modules/socket.io-client/dist/socket.io',[], function () { return io; });
 }
 })();
-define("game", 
-  ["./util","./actor","./world","./world_renderer","./network/network_client","./network/network_server","./event_manager","./key_handler","./vendor/three","../../node_modules/socket.io-client/dist/socket.io","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __dependency8__, __dependency9__, __dependency10__, __exports__) {
+define("client/game_client", 
+  ["../shared/util","../shared/event_manager","../shared/actor","../shared/world","./world_renderer","./network_client","./key_handler","../vendor/three","../../../node_modules/socket.io-client/dist/socket.io","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __dependency8__, __dependency9__, __exports__) {
     
     var defineClass = __dependency1__.defineClass;
     var proxyMethodsTo = __dependency1__.proxyMethodsTo;
-    var Actor = __dependency2__["default"];
-    var World = __dependency3__["default"];
-    var WorldRenderer = __dependency4__["default"];
-    var NetworkClient = __dependency5__["default"];
-    var NetworkServer = __dependency6__["default"];
-    var EventManager = __dependency7__["default"];
-    var KeyHandler = __dependency8__["default"];
-    var THREE = __dependency9__["default"];
-    var connect = __dependency10__.connect;
+    var EventManager = __dependency2__["default"];
+    var Actor = __dependency3__["default"];
+    var World = __dependency4__["default"];
+    var WorldRenderer = __dependency5__["default"];
+    var NetworkClient = __dependency6__["default"];
+    var KeyHandler = __dependency7__["default"];
+    var THREE = __dependency8__["default"];
+    var connect = __dependency9__.connect;
 
     var worldMethods = ['getEntity', 'add', 'remove', 'set', 'get', 'createEntity'];
 
-    var Game = defineClass(function(){}, {
+    __exports__["default"] = defineClass(function(){}, {
       initialize: function(params) {
         this.world = new World();
+        this.params = params;
+
+        proxyMethodsTo.call(this, worldMethods, this.world);
 
         this.eventManager = new EventManager(this);
-        proxyMethodsTo.call(this, ['on', 'off'], this.eventManager);
-
-        if ('undefined' !== typeof global) {
-          this.backend = new GameServer(this, this.world, params);
-        } else {
-          this.backend = new GameClient(this, this.world, params);
-        }
-
-        proxyMethodsTo.call(this, worldMethods, this.backend);
-        proxyMethodsTo.call(this, ['onEntity', 'onWorld'], this.backend);
-      },
-
-      start: function() {
-        this.backend.start();
-      },
-
-      trigger: function(eventName, data) {
-        this.eventManager.trigger.apply(this.eventManager, arguments);
-        this.world.trigger.apply(this.world, arguments);
-      }
-    });
-
-    var NOOP = function() {};
-
-    var GameServer = defineClass(function(){}, {
-      initialize: function(root, world, params) {
-        this.root = root;
-        this.world = world;
-        this.params = params;
-
-        proxyMethodsTo.call(this, worldMethods, this.world);
-        proxyMethodsTo.call(this, ['on', 'off', 'trigger'], this.root);
-
-        this.network = new NetworkServer(this.world);
-
-        var self = this;
-        this.on('socket:connection', function(socket) {
-          self.network.addConnection(socket);
-          self.network.pushCurrentState(socket.id);
-
-          socket.emit('server:connectionAccepted', {
-            id: socket.id
-          });
-
-          socket.on('client:networkReady', function() {
-            self.network.pushCurrentState(socket.id);
-
-            self.trigger('connection', [socket.id]);
-
-            socket.emit('server:gameReady');
-          });
-
-          socket.on('clientEvent', function(message) {
-            self.trigger('client:' + message.eventName, [message.data]);
-          });
-
-          socket.on('disconnect', function() {
-            self.network.removeConnection(socket);
-            self.trigger('disconnection', [socket.id]);
-          });
-        })
-      },
-
-      onEntity: NOOP,
-      onWorld: NOOP,
-
-      start: function() {
-        this.startGameLoop();
-      },
-
-      startGameLoop: function() {
-        var previousTime = new Date().getTime();
-        var time = previousTime;
-        var delta = 0;
-
-        var self = this;
-        setInterval(function() {
-          previousTime = time;
-          time = new Date().getTime();
-          delta = (time - previousTime) * 0.001;
-       
-          self.world.tick(delta);
-          self.network.sync(delta);
-        }, 32);
-      }
-    });
-
-    var GameClient = defineClass(function(){}, {
-      initialize: function(root, world, params) {
-        this.root = root;
-        this.world = world;
-        this.params = params;
-
-        proxyMethodsTo.call(this, worldMethods, this.world);
-        proxyMethodsTo.call(this, ['on', 'off', 'trigger'], this.root);
+        proxyMethodsTo.call(this, ['on', 'off', 'trigger'], this.eventManager);
 
         this.setupRenderer();
 
@@ -46008,20 +45831,14 @@ define("game",
         this.renderer = new WorldRenderer(this.world);
         proxyMethodsTo.call(this, ['onEntity', 'onWorld'], this.renderer);
 
-        if (this.params.renderer) {
-          this.renderer.onWorld(this.params.renderer);
-        }
-
         var self = this;
         window.addEventListener('resize', function() {
           self.renderer.resize();
         }, false);
       }
     });
-
-    __exports__["default"] = Game;
   });
-define("behavior", 
+define("shared/behavior", 
   ["./util","exports"],
   function(__dependency1__, __exports__) {
     
@@ -46094,8 +45911,8 @@ define("behavior",
 
     __exports__["default"] = Behavior;
   });
-define("renderer", 
-  ["./util","exports"],
+define("client/renderer", 
+  ["../shared/util","exports"],
   function(__dependency1__, __exports__) {
     
     var defineWrapper = __dependency1__.defineWrapper;
@@ -46138,31 +45955,27 @@ define("renderer",
     __exports__["default"] = Renderer;
   });
 define("multiverse", 
-  ["./game","./entity","./behavior","./renderer","./util","./vendor/three","exports"],
+  ["./client/game_client","./shared/entity","./shared/behavior","./client/renderer","./shared/util","./vendor/three","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __exports__) {
     
-    var Game = __dependency1__["default"];
+    var GameClient = __dependency1__["default"];
     var Entity = __dependency2__["default"];
     var Behavior = __dependency3__["default"];
     var Renderer = __dependency4__["default"];
-    var isServer = __dependency5__.isServer;
-    var isClient = __dependency5__.isClient;
     var and = __dependency5__.and;
     var or = __dependency5__.or;
     var ref = __dependency5__.ref;
     var property = __dependency5__.property;
     var THREE = __dependency6__["default"];
 
-    __exports__.Game = Game;
+    __exports__.GameClient = GameClient;
     __exports__.Entity = Entity;
     __exports__.Behavior = Behavior;
     __exports__.Renderer = Renderer;
-    __exports__.isServer = isServer;
-    __exports__.isClient = isClient;
     __exports__.and = and;
     __exports__.or = or;
     __exports__.ref = ref;
     __exports__.property = property;
     __exports__.THREE = THREE;
   });
-require(['game/core']);
+require(['game/client']);

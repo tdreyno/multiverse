@@ -1,2 +1,2 @@
 "use strict";
-require(['game/core']);
+require(['game/client']);

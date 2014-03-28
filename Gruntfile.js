@@ -12,7 +12,7 @@ module.exports = function(grunt) {
         files: [{
           expand: true,
           cwd: 'lib/',
-          src: ['**/*.js'],
+          src: ['vendor/**/*.js', 'shared/**/*.js', 'client/**/*.js', 'multiverse.js'],
           dest: 'dist/client/'
         }]
       },
@@ -22,7 +22,7 @@ module.exports = function(grunt) {
         files: [{
           expand: true,
           cwd: 'lib/',
-          src: ['**/*.js'],
+          src: ['vendor/**/*.js', 'shared/**/*.js', 'server/**/*.js', 'cli.js', 'server.js'],
           dest: 'dist/server/'
         }]
       }

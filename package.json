@@ -18,5 +18,5 @@
   "bin": {
     "multiverse": "bin/multiverse.bin.js"
   },
-  "main": "dist/server/multiverse.js"
+  "main": "dist/server/server.js"
 }

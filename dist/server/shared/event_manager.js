@@ -1,4 +1,5 @@
-import EventEmitter from './vendor/EventEmitter';
+"use strict";
+var EventEmitter = require("../vendor/EventEmitter")["default"];
 
 var EventManager = function() {
   this.emitter = new EventEmitter();
@@ -16,4 +17,4 @@ EventManager.prototype.trigger = function() {
   return this.emitter.emitEvent.apply(this.emitter, arguments);
 };
 
-export default = EventManager;
+exports["default"] = EventManager;
