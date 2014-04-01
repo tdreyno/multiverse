@@ -51,7 +51,7 @@ module.exports = function(grunt) {
       dev: {
         src: ['node_modules/requirejs/require.js', 'dist/multiverse-client.js', 'lib/server/suffix.js'],
         dest: 'dist/multiverse-client-with-require.js',
-      },
+      }
     }
   });
 
