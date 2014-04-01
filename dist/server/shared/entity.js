@@ -1,5 +1,5 @@
 "use strict";
-var BehaviorManager = require("./behavior_manager")["default"];
+var ComponentManager = require("./component_manager")["default"];
 var EventManager = require("./event_manager")["default"];
 var StateManager = require("./state_manager")["default"];
 var Actor = require("./actor")["default"];
@@ -7,8 +7,8 @@ var defineWrapper = require("./util").defineWrapper;
 var proxyMethodsTo = require("./util").proxyMethodsTo;
 
 var Entity = function(params) {
-  this.behaviorManager = new BehaviorManager(this);
-  proxyMethodsTo.call(this, ['addBehavior', 'addBehaviors'], this.behaviorManager);
+  this.componentManager = new ComponentManager(this);
+  proxyMethodsTo.call(this, ['addComponent', 'addComponents'], this.componentManager);
 
   this.eventManager = new EventManager(this);
   proxyMethodsTo.call(this, ['on', 'off'], this.eventManager);
@@ -19,18 +19,18 @@ var Entity = function(params) {
   var self = this;
   this.on('didAddToWorld', function(world) {
     self.world_ = world;
-    self.behaviorManager.setup();
+    self.componentManager.setup();
   });
 
   // this.on('didRemoveFromWorld', function() {
-  //   self.behaviorManager.destroy();
+  //   self.componentManager.destroy();
   //   self.world_ = null;
   // });
 };
 
 Entity.prototype.trigger = function() {
   this.eventManager.trigger.apply(this.eventManager, arguments);
-  this.behaviorManager.trigger.apply(this.behaviorManager, arguments);
+  this.componentManager.trigger.apply(this.componentManager, arguments);
   
   if (this.actor) {
     this.actor.trigger.apply(this.actor, arguments);
@@ -72,8 +72,8 @@ Entity.define = function(details) {
   var constructor = details.initialize || function() {};
   delete details.initialize;
 
-  var behaviors = details.behaviors || [];
-  delete details.behaviors;
+  var components = details.components || [];
+  delete details.components;
 
   var events = details.events || {};
   delete details.events;
@@ -84,7 +84,7 @@ Entity.define = function(details) {
   var wrappedConstructor = function(params) {
     params = params || {};
     
-    this.addBehaviors(behaviors);
+    this.addComponents(components);
     
     params.id = params.id || this.uid;
     this.sync(params);
@@ -115,10 +115,10 @@ Entity.define = function(details) {
     Actor.byName[syncsAs] = wrapped;
   }
 
-  wrapped.behaviors = {
+  wrapped.components = {
     add: function(klass, options) {
       options = 'undefined' !== typeof options ? options : {};
-      behaviors.push([klass, options.params || {}, options.guard]);
+      components.push([klass, options.params || {}, options.guard]);
     }
   };
   

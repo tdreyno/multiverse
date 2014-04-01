@@ -13,12 +13,11 @@ exports["default"] = defineClass(function(){}, {
     this.params = params;
 
     proxyMethodsTo.call(this, worldMethods, this.world);
-    // proxyMethodsTo.call(this, ['on', 'off', 'trigger'], this.root);
 
     this.network = new NetworkServer(this.world);
 
     this.eventManager = new EventManager(this);
-    proxyMethodsTo.call(this, ['on', 'off', 'trigger'], this.eventManager);
+    proxyMethodsTo.call(this, ['on', 'off'], this.eventManager);
 
     var self = this;
     this.on('socket:connection', function(socket) {
@@ -38,7 +37,13 @@ exports["default"] = defineClass(function(){}, {
       });
 
       socket.on('clientEvent', function(message) {
-        self.trigger('client:' + message.eventName, [message.data]);
+        console.log('Received Client Event (' + socket.id + ': ' + message.eventName);
+        self.trigger('client:' + message.eventName, [
+          {
+            data: message.data,
+            clientId: socket.id
+          }
+        ]);
       });
 
       socket.on('disconnect', function() {
@@ -46,6 +51,11 @@ exports["default"] = defineClass(function(){}, {
         self.trigger('disconnection', [socket.id]);
       });
     })
+  },
+
+  trigger: function(eventName, data) {
+    this.eventManager.trigger.apply(this.eventManager, arguments);
+    this.world.trigger.apply(this.world, arguments);
   },
 
   start: function() {

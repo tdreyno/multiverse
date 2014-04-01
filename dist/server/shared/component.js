@@ -1,6 +1,8 @@
-import { defineWrapper, proxyMethodsTo } from './util';
+"use strict";
+var defineWrapper = require("./util").defineWrapper;
+var proxyMethodsTo = require("./util").proxyMethodsTo;
 
-var Behavior = function(entity, options) {
+var Component = function(entity, options) {
   this.entity = entity;
   this.options_ = options;
   this.enabled_ = true;
@@ -8,21 +10,21 @@ var Behavior = function(entity, options) {
   proxyMethodsTo.call(this, ['on', 'off', 'trigger', 'getWorld', 'get', 'set', 'getRawState', 'createEntity', 'triggerNetwork'], this.entity);
 };
 
-Behavior.prototype.isActive = function() {
+Component.prototype.isActive = function() {
   return this.enabled_;
 };
 
-Behavior.prototype.enable = function() {
+Component.prototype.enable = function() {
   this.enabled_ = true;
   this.initialize();
 };
 
-Behavior.prototype.disable = function() {
+Component.prototype.disable = function() {
   this.enabled_ = false;
   this.destroy();
 };
 
-Behavior.prototype.receivedMessage = function(eventName, data) {
+Component.prototype.receivedMessage = function(eventName, data) {
   this.onMessage(eventName, data);
 
   var events = this.constructor.eventMap;
@@ -33,10 +35,10 @@ Behavior.prototype.receivedMessage = function(eventName, data) {
   }
 };
 
-Behavior.prototype.onMessage = function(eventName, data) {
+Component.prototype.onMessage = function(eventName, data) {
 };
 
-Behavior.prototype.getOption = function(name) {
+Component.prototype.getOption = function(name) {
   var ref = this.options_[name];
 
   if ('function' === typeof ref) {
@@ -46,22 +48,22 @@ Behavior.prototype.getOption = function(name) {
   }
 };
 
-Behavior.prototype.destroy = function() {
+Component.prototype.destroy = function() {
 
 };
 
-Behavior.define = function(details) {
+Component.define = function(details) {
   var constructor = details.initialize || function() {};
   // delete details.initialize;
 
   var events = details.events || {};
   delete details.events;
 
-  var klass = defineWrapper(Behavior, constructor, details);
+  var klass = defineWrapper(Component, constructor, details);
 
   klass.eventMap = events;
 
   return klass;
 };
 
-export default = Behavior;
+exports["default"] = Component;

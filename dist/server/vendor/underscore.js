@@ -333,13 +333,13 @@ _.sortBy = function(obj, value, context) {
 };
 
 // An internal function used for aggregate "group by" operations.
-var group = function(behavior) {
+var group = function(component) {
   return function(obj, value, context) {
     var result = {};
     var iterator = value == null ? _.identity : lookupIterator(value);
     each(obj, function(value, index) {
       var key = iterator.call(context, value, index, obj);
-      behavior(result, key, value);
+      component(result, key, value);
     });
     return result;
   };

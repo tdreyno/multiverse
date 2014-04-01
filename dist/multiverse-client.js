@@ -337,13 +337,13 @@ define("vendor/underscore",
     };
 
     // An internal function used for aggregate "group by" operations.
-    var group = function(behavior) {
+    var group = function(component) {
       return function(obj, value, context) {
         var result = {};
         var iterator = value == null ? _.identity : lookupIterator(value);
         each(obj, function(value, index) {
           var key = iterator.call(context, value, index, obj);
-          behavior(result, key, value);
+          component(result, key, value);
         });
         return result;
       };
@@ -1942,28 +1942,28 @@ define("shared/actor",
 
     __exports__["default"] = Actor;
   });
-define("shared/behavior_manager", 
+define("shared/component_manager", 
   ["exports"],
   function(__exports__) {
     
-    var BehaviorManager = function(entity) {
+    var ComponentManager = function(entity) {
       this.entity = entity;
-      this.behaviorDefinitions = [];
-      this.behaviors = {};
-      this.behaviorGuards = {};
+      this.componentDefinitions = [];
+      this.components = {};
+      this.componentGuards = {};
     };
 
-    BehaviorManager.prototype.getActiveBehaviors = function() {
+    ComponentManager.prototype.getActiveComponents = function() {
       this.checkGuards();
 
       var activeList = [];
 
-      for (var key in this.behaviors) {
-        if (this.behaviors.hasOwnProperty(key)) {
-          var behavior = this.behaviors[key];
+      for (var key in this.components) {
+        if (this.components.hasOwnProperty(key)) {
+          var component = this.components[key];
 
-          if (behavior.isActive()) {
-            activeList.push(behavior);
+          if (component.isActive()) {
+            activeList.push(component);
           }
         }
       }
@@ -1971,47 +1971,47 @@ define("shared/behavior_manager",
       return activeList;
     };
 
-    BehaviorManager.prototype.checkGuards = function() {
-      for (var key in this.behaviors) {
-        if (this.behaviors.hasOwnProperty(key)) {
-          var behavior = this.behaviors[key];
-          var behaviorGuard = this.behaviorGuards[key];
-          var guardResult = 'function' === typeof behaviorGuard ? behaviorGuard.call(behavior) : behaviorGuard;
+    ComponentManager.prototype.checkGuards = function() {
+      for (var key in this.components) {
+        if (this.components.hasOwnProperty(key)) {
+          var component = this.components[key];
+          var componentGuard = this.componentGuards[key];
+          var guardResult = 'function' === typeof componentGuard ? componentGuard.call(component) : componentGuard;
 
-          if (behavior.isActive() && !guardResult) {
-            behavior.disable();
-          } else if (!behavior.isActive() && guardResult) {
-            behavior.enable();
+          if (component.isActive() && !guardResult) {
+            component.disable();
+          } else if (!component.isActive() && guardResult) {
+            component.enable();
           }
         }
       }
     };
 
-    BehaviorManager.prototype.onActiveBehaviors = function(method, args) {
-      var active = this.getActiveBehaviors();
+    ComponentManager.prototype.onActiveComponents = function(method, args) {
+      var active = this.getActiveComponents();
 
       for (var i = 0; i < active.length; i++) {
         active[i][method].apply(active[i], args);
       }
     };
 
-    BehaviorManager.prototype.addBehavior = function(behavior, options, guard) {
-      this.behaviorDefinitions.push(Array.prototype.slice.call(this, arguments));
+    ComponentManager.prototype.addComponent = function(component, options, guard) {
+      this.componentDefinitions.push(Array.prototype.slice.call(this, arguments));
     };
 
-    BehaviorManager.prototype.addBehaviors = function(behaviors) {
-      this.behaviorDefinitions = this.behaviorDefinitions.concat(behaviors);
+    ComponentManager.prototype.addComponents = function(components) {
+      this.componentDefinitions = this.componentDefinitions.concat(components);
     };
 
-    BehaviorManager.prototype.setupBehavior = function(behavior, guard) {
-      this.behaviors[behavior.uid] = behavior;
-      this.behaviorGuards[behavior.uid] = 'undefined' !== typeof guard ? guard : true;
+    ComponentManager.prototype.setupComponent = function(component, guard) {
+      this.components[component.uid] = component;
+      this.componentGuards[component.uid] = 'undefined' !== typeof guard ? guard : true;
     };
 
-    BehaviorManager.prototype.setup = function() {
-      for (var i = 0; i < this.behaviorDefinitions.length; i++) {
-        var def = this.behaviorDefinitions[i];
-        this.setupBehavior(
+    ComponentManager.prototype.setup = function() {
+      for (var i = 0; i < this.componentDefinitions.length; i++) {
+        var def = this.componentDefinitions[i];
+        this.setupComponent(
           new def[0](this.entity, def[1]),
           def[2]
         );
@@ -2020,23 +2020,23 @@ define("shared/behavior_manager",
       this.checkGuards();
     };
 
-    BehaviorManager.prototype.destroy = function() {
-      for (var key in this.behaviors) {
-        if (this.behaviors.hasOwnProperty(key)) {
-          this.behaviors[key].destroy();
+    ComponentManager.prototype.destroy = function() {
+      for (var key in this.components) {
+        if (this.components.hasOwnProperty(key)) {
+          this.components[key].destroy();
         }
       }
 
-      this.behaviors = {};
-      this.behaviorGuards = {};
+      this.components = {};
+      this.componentGuards = {};
     };
 
-    BehaviorManager.prototype.trigger = function(eventName, eventData) {
+    ComponentManager.prototype.trigger = function(eventName, eventData) {
       var args = [eventName].concat(eventData || []);
-      this.onActiveBehaviors('receivedMessage', args);
+      this.onActiveComponents('receivedMessage', args);
     };
 
-    __exports__["default"] = BehaviorManager;
+    __exports__["default"] = ComponentManager;
   });
 define("shared/state_manager", 
   ["./util","../vendor/underscore","exports"],
@@ -2078,10 +2078,10 @@ define("shared/state_manager",
     __exports__["default"] = StateManager;
   });
 define("shared/entity", 
-  ["./behavior_manager","./event_manager","./state_manager","./actor","./util","exports"],
+  ["./component_manager","./event_manager","./state_manager","./actor","./util","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __exports__) {
     
-    var BehaviorManager = __dependency1__["default"];
+    var ComponentManager = __dependency1__["default"];
     var EventManager = __dependency2__["default"];
     var StateManager = __dependency3__["default"];
     var Actor = __dependency4__["default"];
@@ -2089,8 +2089,8 @@ define("shared/entity",
     var proxyMethodsTo = __dependency5__.proxyMethodsTo;
 
     var Entity = function(params) {
-      this.behaviorManager = new BehaviorManager(this);
-      proxyMethodsTo.call(this, ['addBehavior', 'addBehaviors'], this.behaviorManager);
+      this.componentManager = new ComponentManager(this);
+      proxyMethodsTo.call(this, ['addComponent', 'addComponents'], this.componentManager);
 
       this.eventManager = new EventManager(this);
       proxyMethodsTo.call(this, ['on', 'off'], this.eventManager);
@@ -2101,18 +2101,18 @@ define("shared/entity",
       var self = this;
       this.on('didAddToWorld', function(world) {
         self.world_ = world;
-        self.behaviorManager.setup();
+        self.componentManager.setup();
       });
 
       // this.on('didRemoveFromWorld', function() {
-      //   self.behaviorManager.destroy();
+      //   self.componentManager.destroy();
       //   self.world_ = null;
       // });
     };
 
     Entity.prototype.trigger = function() {
       this.eventManager.trigger.apply(this.eventManager, arguments);
-      this.behaviorManager.trigger.apply(this.behaviorManager, arguments);
+      this.componentManager.trigger.apply(this.componentManager, arguments);
       
       if (this.actor) {
         this.actor.trigger.apply(this.actor, arguments);
@@ -2154,8 +2154,8 @@ define("shared/entity",
       var constructor = details.initialize || function() {};
       delete details.initialize;
 
-      var behaviors = details.behaviors || [];
-      delete details.behaviors;
+      var components = details.components || [];
+      delete details.components;
 
       var events = details.events || {};
       delete details.events;
@@ -2166,7 +2166,7 @@ define("shared/entity",
       var wrappedConstructor = function(params) {
         params = params || {};
         
-        this.addBehaviors(behaviors);
+        this.addComponents(components);
         
         params.id = params.id || this.uid;
         this.sync(params);
@@ -2197,10 +2197,10 @@ define("shared/entity",
         Actor.byName[syncsAs] = wrapped;
       }
 
-      wrapped.behaviors = {
+      wrapped.components = {
         add: function(klass, options) {
           options = 'undefined' !== typeof options ? options : {};
-          behaviors.push([klass, options.params || {}, options.guard]);
+          components.push([klass, options.params || {}, options.guard]);
         }
       };
       
@@ -2476,7 +2476,6 @@ define("client/key_handler",
   function(__exports__) {
     
     __exports__["default"] = function(changeCallback) {
-
       var _callback = (typeof(changeCallback) == "function") ? changeCallback : function() {};
 
       var keys = [];
@@ -43716,7 +43715,7 @@ define("client/game_client",
         proxyMethodsTo.call(this, worldMethods, this.world);
 
         this.eventManager = new EventManager(this);
-        proxyMethodsTo.call(this, ['on', 'off', 'trigger'], this.eventManager);
+        proxyMethodsTo.call(this, ['on', 'off'], this.eventManager);
 
         this.setupRenderer();
 
@@ -43724,6 +43723,11 @@ define("client/game_client",
         new KeyHandler(function(keyCode, keyValue) {
           self.trigger('inputChange', [{ code: keyCode, state: keyValue }]);
         });
+      },
+
+      trigger: function(eventName, data) {
+        this.eventManager.trigger.apply(this.eventManager, arguments);
+        this.world.trigger.apply(this.world, arguments);
       },
 
       start: function() {
@@ -43769,14 +43773,14 @@ define("client/game_client",
       }
     });
   });
-define("shared/behavior", 
+define("shared/component", 
   ["./util","exports"],
   function(__dependency1__, __exports__) {
     
     var defineWrapper = __dependency1__.defineWrapper;
     var proxyMethodsTo = __dependency1__.proxyMethodsTo;
 
-    var Behavior = function(entity, options) {
+    var Component = function(entity, options) {
       this.entity = entity;
       this.options_ = options;
       this.enabled_ = true;
@@ -43784,21 +43788,21 @@ define("shared/behavior",
       proxyMethodsTo.call(this, ['on', 'off', 'trigger', 'getWorld', 'get', 'set', 'getRawState', 'createEntity', 'triggerNetwork'], this.entity);
     };
 
-    Behavior.prototype.isActive = function() {
+    Component.prototype.isActive = function() {
       return this.enabled_;
     };
 
-    Behavior.prototype.enable = function() {
+    Component.prototype.enable = function() {
       this.enabled_ = true;
       this.initialize();
     };
 
-    Behavior.prototype.disable = function() {
+    Component.prototype.disable = function() {
       this.enabled_ = false;
       this.destroy();
     };
 
-    Behavior.prototype.receivedMessage = function(eventName, data) {
+    Component.prototype.receivedMessage = function(eventName, data) {
       this.onMessage(eventName, data);
 
       var events = this.constructor.eventMap;
@@ -43809,10 +43813,10 @@ define("shared/behavior",
       }
     };
 
-    Behavior.prototype.onMessage = function(eventName, data) {
+    Component.prototype.onMessage = function(eventName, data) {
     };
 
-    Behavior.prototype.getOption = function(name) {
+    Component.prototype.getOption = function(name) {
       var ref = this.options_[name];
 
       if ('function' === typeof ref) {
@@ -43822,25 +43826,25 @@ define("shared/behavior",
       }
     };
 
-    Behavior.prototype.destroy = function() {
+    Component.prototype.destroy = function() {
 
     };
 
-    Behavior.define = function(details) {
+    Component.define = function(details) {
       var constructor = details.initialize || function() {};
       // delete details.initialize;
 
       var events = details.events || {};
       delete details.events;
 
-      var klass = defineWrapper(Behavior, constructor, details);
+      var klass = defineWrapper(Component, constructor, details);
 
       klass.eventMap = events;
 
       return klass;
     };
 
-    __exports__["default"] = Behavior;
+    __exports__["default"] = Component;
   });
 define("client/renderer", 
   ["../shared/util","exports"],
@@ -43886,12 +43890,12 @@ define("client/renderer",
     __exports__["default"] = Renderer;
   });
 define("multiverse", 
-  ["./client/game_client","./shared/entity","./shared/behavior","./client/renderer","./shared/util","./vendor/three","exports"],
+  ["./client/game_client","./shared/entity","./shared/component","./client/renderer","./shared/util","./vendor/three","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __exports__) {
     
     var GameClient = __dependency1__["default"];
     var Entity = __dependency2__["default"];
-    var Behavior = __dependency3__["default"];
+    var Component = __dependency3__["default"];
     var Renderer = __dependency4__["default"];
     var and = __dependency5__.and;
     var or = __dependency5__.or;
@@ -43901,7 +43905,7 @@ define("multiverse",
 
     __exports__.GameClient = GameClient;
     __exports__.Entity = Entity;
-    __exports__.Behavior = Behavior;
+    __exports__.Component = Component;
     __exports__.Renderer = Renderer;
     __exports__.and = and;
     __exports__.or = or;
