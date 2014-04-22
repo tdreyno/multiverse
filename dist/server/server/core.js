@@ -4,6 +4,7 @@ var http = require('http');
 var app = express();
 var httpServer = http.createServer(app);
 var socketio = require('socket.io').listen(httpServer);
+var sharejs = require('share').server;
 var path = require('path');
 
 var basedir = process.cwd();
@@ -11,6 +12,11 @@ var basedir = process.cwd();
 app.configure(function() {
   app.use(express.static(basedir + '/public'));
   app.use('/game', express.static(basedir + '/dist/client/game'));
+});
+
+sharejs.attach(app, {
+  browserChannel: { cors: "*" },
+  db: { type: 'none' }
 });
 
 app.get('/multiverse/game.js', function(req, res) {

@@ -49,7 +49,7 @@ module.exports = function(grunt) {
     
     concat: {
       dev: {
-        src: ['node_modules/requirejs/require.js', 'dist/multiverse-client.js', 'lib/server/suffix.js'],
+        src: ['node_modules/requirejs/require.js', 'lib/vendor/bcsocket-uncompressed.js', 'node_modules/share/webclient/share.uncompressed.js', 'node_modules/share/webclient/json.uncompressed.js', 'dist/multiverse-client.js', 'lib/server/suffix.js'],
         dest: 'dist/multiverse-client-with-require.js',
       }
     }

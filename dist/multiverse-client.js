@@ -2406,10 +2406,18 @@ define("client/network_client",
   ["exports"],
   function(__exports__) {
     
-    var NetworkClient = function(world, socket, typeLookup) {
+    var NetworkClient = function(world, socket, docId, typeLookup) {
       this.world = world;
       this.socket = socket;
       this.typeLookup = typeLookup;
+
+      sharejs.open(docId, 'json', function(error, doc) {
+        doc.set({
+          'name': 'tdreyno'
+        });
+
+        debugger;
+      });
 
       var self = this;
       this.socket.on('actor:operations', function(data) {
@@ -43737,7 +43745,7 @@ define("client/game_client",
         socket.on('server:connectionAccepted', function(data) {
           self.set('currentPlayerId', data.id);
 
-          new NetworkClient(self.world, socket, Actor.byName);
+          new NetworkClient(self.world, socket, data.id, Actor.byName);
 
           socket.emit('client:networkReady');
         });
